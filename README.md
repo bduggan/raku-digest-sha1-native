@@ -1,17 +1,9 @@
-Digest::SHA1::Native
+Digest::SHA1::Native -- Fast SHA1 computation using NativeCall to C.
 =======
 * Travis: [![Build Status](https://travis-ci.org/bduggan/p6-digest-sha1-native.svg)](https://travis-ci.org/bduggan/p6-digest-sha1-native)
 
-Description
-===========
-Fast SHA1 calculations using NativeCall to C.
-
 Synopsis
 ========
-`sha1-hex` accepts a string or bytes (a Buf or Blob) and returns a hex string.
-
-`sha1` converts the hex into binary (i.e. it returns a Blob).
-
 ```
 use Digest::SHA1::Native;
 
@@ -26,6 +18,12 @@ say sha1("The quick brown fox jumps over the lazy dog")».fmt('%02x').join;
 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
 ```
 
+Description
+===========
+
+`sha1-hex` accepts a string or bytes (a Buf or Blob) and returns a hex string.
+
+`sha1` converts the hex into binary (i.e. it returns a Blob).
 
 Examples
 ========
