@@ -1,6 +1,6 @@
 Digest::SHA1::Native
 =======
-* Travis: [![Build Status](https://travis-ci.org/bduggan/p6-sha1-native.svg)](https://travis-ci.org/bduggan/p6-sha1-native)
+* Travis: [![Build Status](https://travis-ci.org/bduggan/p6-digest-sha1-native.svg)](https://travis-ci.org/bduggan/p6-digest-sha1-native)
 
 Description
 ===========
