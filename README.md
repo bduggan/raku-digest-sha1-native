@@ -8,7 +8,7 @@ Fast SHA1 calculations using NativeCall to C.
 
 Synopsis
 ========
-`sha1-hex` accepts bytes or a string.
+`sha1-hex` accepts a string or bytes (a Buf or Blob).
 
 ```
 use Digest::SHA1::Native;

@@ -21,17 +21,10 @@ is sha1-hex(''), 'da39a3ee5e6b4b0d3255bfef95601890afd80709', 'empty string';
 
 # Examples from sha1.c self test
 # FIPS PUB 180.1 example A.1
-#static char const text1[3] = "abc";
-#static unsigned char const hash1[20] = {
-#        0xa9, 0x99, 0x3e, 0x36, 0x47, 0x06, 0x81, 0x6a, 0xba, 0x3e,
-#        0x25, 0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d };
+is sha1-hex('abc'), 'a9993e364706816aba3e25717850c26c9cd0d89d', 'abc';
 
 # /* FIPS PUB 180.1 example A.2 */
-#static char const text2[56] =
-#        "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-#static unsigned char const hash2[20] = {
-#        0x84, 0x98, 0x3e, 0x44, 0x1c, 0x3b, 0xd2, 0x6e, 0xba, 0xae,
-#        0x4a, 0xa1, 0xf9, 0x51, 0x29, 0xe5, 0xe5, 0x46, 0x70, 0xf1 };
-
+is sha1-hex('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq'),
+   '84983e441c3bd26ebaae4aa1f95129e5e54670f1', 'fips example';
 
 done-testing;
