@@ -27,4 +27,6 @@ multi sub sha1-hex($in) is export {
     return $str.substr(0,40);
 }
 
-
+sub sha1($in) is export {
+    Blob.new( sha1-hex($in).comb(2).map({ :16($_) }))
+}
