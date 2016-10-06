@@ -3,9 +3,7 @@ use Digest::SHA1::Native;
 use Test;
 
 # simple
-for 1..100 {
-    is sha1-hex('hi'), 'c22b5f9178342609428d6f51b2c5af4c0bde6a42', 'match for "hi"';
-}
+is sha1-hex('hi'), 'c22b5f9178342609428d6f51b2c5af4c0bde6a42', 'match for "hi"';
 is sha1-hex('hi'.encode), 'c22b5f9178342609428d6f51b2c5af4c0bde6a42', 'match for "hi".encode';
 is sha1-hex(Buf.new(246,235,108)), '29f19d798e4f28cbf28469468f9b1be56786af11', 'sha1 of buf';
 is sha1-hex(Blob.new(246,235,108)), '29f19d798e4f28cbf28469468f9b1be56786af11', 'sha1 of blob';
