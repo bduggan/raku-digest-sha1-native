@@ -31,7 +31,7 @@ Examples
 ========
 From <https://en.wikipedia.org/wiki/Hash-based_message_authentication_code#Examples>:
 ```
-use Digest::HMAC
+use Digest::HMAC;
 use Digest::SHA1::Native;
 
 say hmac-hex("key","The quick brown fox jumps over the lazy dog",&sha1);
