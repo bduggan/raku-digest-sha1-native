@@ -10,7 +10,7 @@ Synopsis
 ========
 `sha1-hex` accepts a string or bytes (a Buf or Blob) and returns a hex string.
 
-`sha1` converts the hex into binary.
+`sha1` converts the hex into binary (i.e. it returns a Blob).
 
 ```
 use Digest::SHA1::Native;
