@@ -83,6 +83,12 @@ Still 100% public domain
 added compute_sha1
 */
 
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT extern
+#endif
+
 #include <stdio.h>
 #include <string.h>
 
@@ -241,7 +247,7 @@ void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], char *output
     }
 }
 
-void compute_sha1(const unsigned char *str, size_t len, unsigned char *output) {
+DLLEXPORT void compute_sha1(const unsigned char *str, size_t len, unsigned char *output) {
     SHA1_CTX context;
     SHA1Init(&context);
     SHA1Update(&context, str, len);
