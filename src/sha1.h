@@ -4,6 +4,12 @@
 #ifndef __SHA1_H
 #define __SHA1_H
 
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT extern
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,10 +22,7 @@ typedef struct {
 
 #define SHA1_DIGEST_SIZE 20
 
-void SHA1_Init(SHA1_CTX* context);
-void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size_t len);
-void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE]);
-void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], char *output);
+DLLEXPORT void compute_sha1(const unsigned char *str, size_t len, unsigned char *output);
 
 #ifdef __cplusplus
 }

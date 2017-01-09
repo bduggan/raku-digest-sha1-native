@@ -83,18 +83,10 @@ Still 100% public domain
 added compute_sha1
 */
 
-#ifdef _WIN32
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT extern
-#endif
-
 #include <stdio.h>
 #include <string.h>
 
 #include "sha1.h"
-
-void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64]);
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
@@ -118,7 +110,7 @@ void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64]);
 #define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
-void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64])
+static void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64])
 {
     unsigned int a, b, c, d, e;
     typedef union {
@@ -171,7 +163,7 @@ void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64])
 
 
 /* SHA1Init - Initialize new context */
-void SHA1_Init(SHA1_CTX* context)
+static void SHA1_Init(SHA1_CTX* context)
 {
     /* SHA1 initialization constants */
     context->state[0] = 0x67452301;
@@ -184,7 +176,7 @@ void SHA1_Init(SHA1_CTX* context)
 
 
 /* Run your data through this. */
-void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size_t len)
+static void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size_t len)
 {
     size_t i, j;
 
@@ -205,7 +197,7 @@ void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size_t len)
 
 
 /* Add padding and return the message digest. */
-void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE])
+static void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE])
 {
     unsigned int   i;
     unsigned char  finalcount[8];
@@ -234,7 +226,7 @@ void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE])
 
 
 /* Produces a hex output of the digest. */
-void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], char *output)
+static void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], char *output)
 {
     int i,j;
     char *c = output;
@@ -247,10 +239,12 @@ void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], char *output
     }
 }
 
-DLLEXPORT void compute_sha1(const unsigned char *str, size_t len, unsigned char *output) {
+void compute_sha1(const unsigned char *str, size_t len, unsigned char *output) {
+    unsigned char digest[SHA1_DIGEST_SIZE];
     SHA1_CTX context;
-    SHA1Init(&context);
-    SHA1Update(&context, str, len);
-    SHA1Final(&context, output);
+    SHA1_Init(&context);
+    SHA1_Update(&context, str, len);
+    SHA1_Final(&context, digest);
+    SHA1_DigestToHex(digest, output);
 }
 
