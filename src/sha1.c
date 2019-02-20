@@ -117,9 +117,9 @@ static void SHA1_Transform(unsigned int state[5], const unsigned char buffer[64]
         unsigned char c[64];
         unsigned int  l[16];
     } CHAR64LONG16;
-    CHAR64LONG16* block;
-
-    block = (CHAR64LONG16*)buffer;
+    CHAR64LONG16 block_copy;
+    CHAR64LONG16 *block = &block_copy;
+    memcpy(&block_copy, buffer, sizeof(CHAR64LONG16));
 
     /* Copy context->state[] to working vars */
     a = state[0];
