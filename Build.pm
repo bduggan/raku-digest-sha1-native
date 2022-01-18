@@ -4,6 +4,10 @@ use Shell::Command;
 
 class Build {
     method build($dir) {
+        if Rakudo::Internals.IS-WIN {
+            note "Using pre-built DLL on Windows";
+            return True;
+        }
         my %vars = get-vars($dir);
         %vars<sha1> = $*VM.platform-library-name('sha1'.IO);
         mkdir "$dir/resources" unless "$dir/resources".IO.e;
@@ -13,6 +17,7 @@ class Build {
         chdir($dir);
         shell(%vars<MAKE>);
         chdir($goback);
+        True;
     }
 }
 

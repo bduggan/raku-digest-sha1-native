@@ -1,5 +1,13 @@
+*~
+.*
 *.o
 *.so
+*.dll
+*.dylib
+*.bak
+*.gcov
+*.gcda
+*.gcno
+*.obj
 Makefile
-old
-resources
+blib/
