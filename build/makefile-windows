@@ -7,5 +7,5 @@ dll : $(TGT)
 
 $(TGT) : $(SRC).c $(SRC).h
 	gcc -I $(DIR) -c -fPIC -std=gnu99 -Wextra -Wall -Wno-unused-parameter -Wno-unused-function -Wno-missing-braces -Werror=pointer-arith -Werror=vla -O3 -DNDEBUG  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -fPIC -DWSL_BASH_ON_WIN -DMVM_HEAPSNAPSHOT_FORMAT=2 -D_GNU_SOURCE -o $(SRC).obj $(SRC).c
-	gcc -shared -fPIC  -O3 -DNDEBUG -Wl,-rpath,"//home/david/git/rakudo/install/lib" -o $(TGT) $(SRC).obj
+	gcc -shared -fPIC  -O3 -DNDEBUG -W -o $(TGT) $(SRC).obj
 
