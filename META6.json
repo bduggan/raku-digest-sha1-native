@@ -1,7 +1,7 @@
 {
     "name" : "Digest::SHA1::Native",
     "source-url" : "git://github.com/bduggan/p6-digest-sha1-native.git",
-    "perl" : "6.c",
+    "perl" : "6.*",
     "resources" : [
         "libraries/sha1"
     ],
@@ -12,9 +12,9 @@
     "depends" : [
         "LibraryMake"
     ],
-    "description" : "p6 bindings to C implementation of SHA1",
+    "description" : "Raku bindings to C implementation of SHA1",
     "test-depends" : [ ],
-    "version" : "0.04",
+    "version" : "0.05",
     "license" : "Artistic-2.0",
     "authors" : [
         "Brian Duggan"
