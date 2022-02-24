@@ -12,4 +12,4 @@ sha1%O%: src/sha1.c
 	%CC% -c %CCSHARED% %CCFLAGS% %CCOUT% sha1%O% src/sha1.c
 
 test: all
-	prove -e "perl6 -Ilib" t
+	prove -e "raku -Ilib" t
