@@ -10,8 +10,8 @@ class Build {
         }
         my %vars = get-vars($dir);
         %vars<sha1> = $*VM.platform-library-name('sha1'.IO);
-        mkdir "$dir/resources" unless "$dir/resources".IO.e;
-        mkdir "$dir/resources/libraries" unless "$dir/resources/libraries".IO.e;
+        mkdir "$dir/resources" unless "$dir/resources".IO.d;
+        mkdir "$dir/resources/libraries" unless "$dir/resources/libraries".IO.d;
         process-makefile($dir, %vars);
         my $goback = $*CWD;
         chdir($dir);
