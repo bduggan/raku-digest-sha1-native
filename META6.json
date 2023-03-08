@@ -1,6 +1,6 @@
 {
     "name" : "Digest::SHA1::Native",
-    "source-url" : "git://github.com/bduggan/p6-digest-sha1-native.git",
+    "source-url" : "git://github.com/bduggan/raku-digest-sha1-native.git",
     "perl" : "6.*",
     "resources" : [
         "libraries/sha1"
