@@ -1,5 +1,10 @@
-/* public api for steve reid's public domain SHA-1 implementation */
-/* this file is in the public domain */
+/*********************************************************************
+* Filename:   sha1.h
+* Author:     Brad Conte (brad AT bradconte.com)
+* Copyright:
+* Disclaimer: This code is presented "as is" without any guarantees.
+* Details:    Defines the API for the corresponding SHA1 implementation.
+*********************************************************************/
 
 #ifndef __SHA1_H
 #define __SHA1_H
@@ -14,18 +19,29 @@
 extern "C" {
 #endif
 
+/*************************** HEADER FILES ***************************/
+#include <stddef.h>
+
+/****************************** MACROS ******************************/
+#define SHA1_BLOCK_SIZE 20              // SHA1 outputs a 20 byte digest
+
+/**************************** DATA TYPES ****************************/
+typedef unsigned char BYTE;             // 8-bit byte
+typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
+
 typedef struct {
-    unsigned int  state[5];
-    unsigned int  count[2];
-    unsigned char buffer[64];
+	BYTE data[64];
+	WORD datalen;
+	unsigned long long bitlen;
+	WORD state[5];
+	WORD k[4];
 } SHA1_CTX;
 
-#define SHA1_DIGEST_SIZE 20
-
+/*********************** FUNCTION DECLARATIONS **********************/
 DLLEXPORT void compute_sha1(const unsigned char *str, size_t len, unsigned char *output);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __SHA1_H */
+#endif   /* __SHA1_H */
