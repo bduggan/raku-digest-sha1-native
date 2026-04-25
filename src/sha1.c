@@ -81,6 +81,17 @@ Modified 10/2016
 by Brian Duggan <bduggan@matatu.org>
 Still 100% public domain
 added compute_sha1
+
+----------------
+Modified 04/25/2026
+by Brian Duggan <bduggan@matatu.org>
+Still 100% public domain
+Rewrote SHA1_Final to pad directly into context->buffer instead of
+feeding padding bytes through SHA1_Update one at a time. This both
+avoids ~50 SHA1_Update calls per digest and silences a GCC
+-Wstringop-overread warning that fired when SHA1_Update was inlined
+into SHA1_Final with len=8 (the inliner couldn't prove the bulk
+SHA1_Transform loop was unreachable in that call).
 */
 
 #include <stdio.h>
@@ -186,10 +197,8 @@ static void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size
     if ((j + len) > 63) {
         memcpy(&context->buffer[j], data, (i = 64-j));
         SHA1_Transform(context->state, context->buffer);
-        if (len >= 64) {
-            for ( ; i + 63 < len; i += 64) {
-                SHA1_Transform(context->state, data + i);
-            }
+        for ( ; i + 63 < len; i += 64) {
+            SHA1_Transform(context->state, data + i);
         }
         j = 0;
     }
@@ -201,18 +210,28 @@ static void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size
 /* Add padding and return the message digest. */
 static void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE])
 {
-    unsigned int   i;
-    unsigned char  finalcount[8];
+    unsigned int  i;
+    unsigned char finalcount[8];
+    size_t        j;
 
     for (i = 0; i < 8; i++) {
         finalcount[i] = (unsigned char)((context->count[(i >= 4 ? 0 : 1)]
          >> ((3-(i & 3)) * 8) ) & 255);  /* Endian independent */
     }
-    SHA1_Update(context, (unsigned char *)"\200", 1);
-    while ((context->count[0] & 504) != 448) {
-        SHA1_Update(context, (unsigned char *)"\0", 1);
+
+    /* Pad directly into the buffer instead of feeding bytes through
+       SHA1_Update one at a time. */
+    j = (context->count[0] >> 3) & 63;
+    context->buffer[j++] = 0x80;
+    if (j > 56) {
+        memset(&context->buffer[j], 0, 64 - j);
+        SHA1_Transform(context->state, context->buffer);
+        j = 0;
     }
-    SHA1_Update(context, finalcount, 8);  /* Should cause a SHA1_Transform() */
+    memset(&context->buffer[j], 0, 56 - j);
+    memcpy(&context->buffer[56], finalcount, 8);
+    SHA1_Transform(context->state, context->buffer);
+
     for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
         digest[i] = (unsigned char)
          ((context->state[i>>2] >> ((3-(i & 3)) * 8) ) & 255);
