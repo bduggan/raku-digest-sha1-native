@@ -94,7 +94,7 @@ into SHA1_Final with len=8 (the inliner couldn't prove the bulk
 SHA1_Transform loop was unreachable in that call).
 
 Also replaced sprintf with pointer assignment to address an extra NULLs
-being added at the end.
+being added at the end, fixed bigendian support.
 */
 
 #include <string.h>
@@ -105,13 +105,15 @@ being added at the end.
 
 /* blk0() and blk() perform the initial expand. */
 /* I got the idea of expanding during the round function from SSLeay */
-/* FIXME: can we do this in an endian-proof way? */
-#ifdef WORDS_BIGENDIAN
-#define blk0(i) block->l[i]
-#else
-#define blk0(i) (block->l[i] = (rol(block->l[i],24)&0xFF00FF00) \
-    |(rol(block->l[i],8)&0x00FF00FF))
-#endif
+/* blk0 reads four bytes of `buffer` as a big-endian 32-bit word. The
+   expression has no host-endianness dependency, so no #ifdef gate is
+   needed. The result is cached into block->l[i] for the later blk()
+   passes to read. */
+#define blk0(i) (block->l[i] = \
+      ((unsigned int)buffer[(i)*4]   << 24) \
+    | ((unsigned int)buffer[(i)*4+1] << 16) \
+    | ((unsigned int)buffer[(i)*4+2] <<  8) \
+    | ((unsigned int)buffer[(i)*4+3]))
 #define blk(i) (block->l[i&15] = rol(block->l[(i+13)&15]^block->l[(i+8)&15] \
     ^block->l[(i+2)&15]^block->l[i&15],1))
 

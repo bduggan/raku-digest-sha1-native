@@ -1,0 +1,30 @@
+use Test;
+use Digest::SHA1::Native;
+
+# blk0() in SHA1_Transform loads four bytes of each 32-bit word in
+# big-endian order. Earlier versions made that a #ifdef WORDS_BIGENDIAN
+# branch which the build system never set, so on a hypothetical big-
+# endian host the byte swap would have been skipped silently and every
+# digest would be wrong with no diagnostic. The fix uses an explicit
+# byte load that produces the same value regardless of host endianness.
+#
+# Each input below is byte-asymmetric: a word-byte-order mistake in
+# blk0 would change the digest. Reference values from `openssl dgst -sha1`.
+
+my @cases =
+    ( 'abc'.encode,
+      'a9993e364706816aba3e25717850c26c9cd0d89d',
+      'FIPS A.1 (abc)' ),
+    ( Buf.new(0x01, 0x02, 0x03, 0x04),
+      '12dada1fff4d4787ade3333147202c3b443e376f',
+      '4 ascending bytes (single sub-word)' ),
+    ( Buf.new(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07),
+      '67423ebfa8454f19ac6f4686d6c0dc731a3ddd6b',
+      '8 ascending bytes (two words)' ),
+    ;
+
+for @cases -> ($input, $expected, $label) {
+    is sha1-hex($input).lc, $expected, "$label -- byte-order sensitive";
+}
+
+done-testing;
