@@ -92,9 +92,11 @@ avoids ~50 SHA1_Update calls per digest and silences a GCC
 -Wstringop-overread warning that fired when SHA1_Update was inlined
 into SHA1_Final with len=8 (the inliner couldn't prove the bulk
 SHA1_Transform loop was unreachable in that call).
+
+Also replaced sprintf with pointer assignment to address an extra NULLs
+being added at the end.
 */
 
-#include <stdio.h>
 #include <string.h>
 
 #include "sha1.h"
@@ -246,17 +248,16 @@ static void SHA1_Final(SHA1_CTX* context, unsigned char digest[SHA1_DIGEST_SIZE]
 }
 
 
-/* Produces a hex output of the digest. */
+/* Produces a hex output of the digest. Writes exactly
+   SHA1_DIGEST_SIZE * 2 bytes; no trailing NUL. */
 static void SHA1_DigestToHex(const unsigned char digest[SHA1_DIGEST_SIZE], unsigned char *output)
 {
-    int i,j;
-    unsigned char *c = output;
+    static const unsigned char hex[] = "0123456789ABCDEF";
+    size_t i;
 
-    for (i = 0; i < SHA1_DIGEST_SIZE/4; i++) {
-        for (j = 0; j < 4; j++) {
-            sprintf((char *)c,"%02X", digest[i*4+j]);
-            c += 2;
-        }
+    for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
+        output[i*2]     = hex[digest[i] >> 4];
+        output[i*2 + 1] = hex[digest[i] & 0x0F];
     }
 }
 

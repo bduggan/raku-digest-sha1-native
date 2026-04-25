@@ -1,0 +1,46 @@
+use Test;
+use NativeCall;
+
+# SHA1_DigestToHex must write exactly 40 bytes (SHA1_DIGEST_SIZE * 2)
+# into the output buffer -- two ASCII hex chars per digest byte, no
+# trailing NUL. Earlier versions used sprintf("%02X", ...) which writes
+# 3 bytes per call (2 hex + NUL), so the final iteration left a stray
+# NUL at output[40], a one-byte overflow for any caller that allocated
+# exactly 40 bytes.
+#
+# We call compute_sha1 directly so we can pre-fill the destination
+# with a sentinel byte and confirm nothing past byte 39 changes.
+
+constant LIB = $*PROGRAM.parent(2).child(
+    'resources/libraries/' ~ $*VM.platform-library-name('sha1'.IO).Str
+).Str;
+
+sub compute_sha1(Blob, size_t, CArray[uint8]) is native(LIB) { * }
+
+my constant BUF-SIZE = 64;
+my constant SENTINEL = 0xAA;
+my constant DIGEST-HEX-LEN = 40;
+
+my CArray[uint8] $buf .= new;
+$buf[$_] = SENTINEL for ^BUF-SIZE;
+
+my $msg = 'hi'.encode;
+compute_sha1($msg, $msg.bytes, $buf);
+
+# Bytes 0..39 should be ASCII hex digits.
+my @bad-hex = (^DIGEST-HEX-LEN).grep({
+    my $b = $buf[$_];
+    not (0x30 <= $b <= 0x39
+      or 0x41 <= $b <= 0x46
+      or 0x61 <= $b <= 0x66);
+});
+is @bad-hex.elems, 0, "first {DIGEST-HEX-LEN} bytes are ASCII hex (offending indices: @bad-hex[])";
+
+# Bytes 40..63 must be untouched.
+my @clobbered = (DIGEST-HEX-LEN ..^ BUF-SIZE).grep({ $buf[$_] != SENTINEL });
+is @clobbered.elems, 0,
+    "no writes past byte {DIGEST-HEX-LEN - 1} "
+    ~ "(clobbered indices: @clobbered[], "
+    ~ "values: @clobbered.map({ '0x' ~ $buf[$_].fmt('%02X') }).join(','))";
+
+done-testing;
