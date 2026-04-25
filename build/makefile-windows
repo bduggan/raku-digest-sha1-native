@@ -3,9 +3,13 @@ DIR=src
 SRC=$(DIR)/sha1
 TGT=resources/libraries/sha1.dll
 
-dll : $(TGT)
-
-$(TGT) : $(SRC).c $(SRC).h
+# `dll` is .PHONY so make always runs the recipe. CI fetches with
+# git-restore-mtime, which can leave the committed sha1.dll with a
+# newer mtime than src/sha1.c -- a normal mtime-driven rule would
+# then think the target is up to date and silently keep shipping the
+# stale committed binary.
+.PHONY: dll
+dll : $(SRC).c $(SRC).h
 	gcc -I $(DIR) -c -fPIC -std=gnu99 -Wextra -Wall -Wno-unused-parameter -Wno-unused-function -Wno-missing-braces -Werror=pointer-arith -Werror=vla -O3 -DNDEBUG  -D_REENTRANT -D_FILE_OFFSET_BITS=64 -fPIC -DWSL_BASH_ON_WIN -DMVM_HEAPSNAPSHOT_FORMAT=2 -D_GNU_SOURCE -o $(SRC).obj $(SRC).c
 	gcc -shared -fPIC  -O3 -DNDEBUG -W -o $(TGT) $(SRC).obj
 
