@@ -16,6 +16,7 @@
     "test-depends" : [ ],
     "version" : "1.0.0",
     "license" : "Artistic-2.0",
+     "auth" : "zef:bduggan",
     "authors" : [
         "Brian Duggan"
     ]
