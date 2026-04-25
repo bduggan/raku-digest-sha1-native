@@ -1,0 +1,48 @@
+use Digest::SHA1::Native;
+use Test;
+
+constant DIGEST_SHA1_TEST_COLLISIONS = ?%*ENV<DIGEST_SHA1_TEST_COLLISIONS>;
+
+plan 3;
+
+unless DIGEST_SHA1_TEST_COLLISIONS {
+   skip-rest "Skippping collision tests (enable DIGEST_SHA1_TEST_COLLISIONS) to run them";
+   exit;
+}
+
+# The SHAttered attack (Stevens et al., 2017) produced two distinct PDFs
+# with the same SHA1 hash: 38762cf7f55934b34d179ae6a4c80cadccbb7f0a
+# https://shattered.io
+constant SHATTERED-SHA1 = '38762cf7f55934b34d179ae6a4c80cadccbb7f0a';
+constant SHATTERED-URLS = %(
+    'shattered-1.pdf' => 'https://github.com/cr-marcstevens/sha1collisiondetection/raw/master/test/shattered-1.pdf',
+    'shattered-2.pdf' => 'https://github.com/cr-marcstevens/sha1collisiondetection/raw/master/test/shattered-2.pdf',
+);
+
+my $data-dir = $*PROGRAM.parent.add('data');
+$data-dir.mkdir unless $data-dir.d;
+
+sub fetch($name, $url) {
+    my $path = $data-dir.add($name);
+    return $path if $path.e && $path.s > 0;
+    my $proc = run 'curl', '-sSLf', '-o', ~$path, $url, :err;
+    return $proc.exitcode == 0 && $path.e && $path.s > 0 ?? $path !! Nil;
+}
+
+my $p1 = fetch('shattered-1.pdf', SHATTERED-URLS<shattered-1.pdf>);
+my $p2 = fetch('shattered-2.pdf', SHATTERED-URLS<shattered-2.pdf>);
+
+without $p1 // $p2 {
+    skip 'SHAttered fixtures unavailable (network or curl missing)', 3;
+    done-testing;
+    exit;
+}
+
+my $b1 = $p1.slurp(:bin);
+my $b2 = $p2.slurp(:bin);
+
+isnt $b1, $b2, 'shattered-1.pdf and shattered-2.pdf are different files';
+is sha1-hex($b1), SHATTERED-SHA1, 'shattered-1.pdf has the SHAttered SHA1';
+is sha1-hex($b2), SHATTERED-SHA1, 'shattered-2.pdf has the SHAttered SHA1';
+
+done-testing;
