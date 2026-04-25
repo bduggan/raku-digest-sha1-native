@@ -7,7 +7,7 @@
     ],
     "build-depends" : [ "Shell::Command" ],
     "provides" : {
-        "Digest::SHA1::Native" : "lib/Digest/SHA1/Native.pm6"
+        "Digest::SHA1::Native" : "lib/Digest/SHA1/Native.rakumod"
     },
     "depends" : [
         "LibraryMake"
