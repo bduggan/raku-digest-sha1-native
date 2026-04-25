@@ -9,7 +9,7 @@ jobs:
   raku:
     strategy:
       matrix:
-        os: ['macos-latest', 'macos-13']
+        os: ['macos-latest' ]
         raku-version: ['latest', '2025.12']
     runs-on: ${{ matrix.os }}
 
