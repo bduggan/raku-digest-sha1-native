@@ -186,8 +186,10 @@ static void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size
     if ((j + len) > 63) {
         memcpy(&context->buffer[j], data, (i = 64-j));
         SHA1_Transform(context->state, context->buffer);
-        for ( ; i + 63 < len; i += 64) {
-            SHA1_Transform(context->state, data + i);
+        if (len >= 64) {
+            for ( ; i + 63 < len; i += 64) {
+                SHA1_Transform(context->state, data + i);
+            }
         }
         j = 0;
     }
