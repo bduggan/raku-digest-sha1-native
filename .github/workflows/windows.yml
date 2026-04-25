@@ -19,6 +19,12 @@ jobs:
       - name: Update DLL
         run: |
           make -f build\makefile-windows dll
+      - name: Upload built DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: sha1-dll
+          path: resources/libraries/sha1.dll
+          retention-days: 7
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Automated Windows DLL save
@@ -31,6 +37,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Pull freshly built DLL
+        # build-libraries auto-commits a refreshed DLL, but our checkout
+        # above is pinned to the triggering SHA -- so we'd test against
+        # the stale DLL committed in the repo. Pull the artifact built
+        # in this run instead.
+        uses: actions/download-artifact@v4
+        with:
+          name: sha1-dll
+          path: resources/libraries/
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
