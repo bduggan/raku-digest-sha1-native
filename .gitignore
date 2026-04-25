@@ -1,5 +1,8 @@
 *~
-.*
+.precomp
+.DS_Store
+.*.swp
+.*.swo
 *.o
 *.so
 *.dll
