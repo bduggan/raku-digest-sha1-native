@@ -1,6 +1,14 @@
+1.0.1 2026-04-25
+  - Force Windows DLL rebuild on every CI run
+  - upload windows artifact for use in testing
+  - handle NULL SHAs better
+  - Make blk0 endian-independent
+  - Fix off by one error
+  - rename Build.pm to Build.rakumod
+
 1.0.0 2026-04-25
-    - added Changes file and github workflows
-    - modernized file suffixes, docs and all the things
-    - 1.0.0 release
+  - added Changes file and github workflows
+  - modernized file suffixes, docs and all the things
+  - 1.0.0 release
 
 

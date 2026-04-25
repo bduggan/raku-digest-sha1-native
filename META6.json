@@ -14,7 +14,7 @@
     ],
     "description" : "Raku bindings to C implementation of SHA1",
     "test-depends" : [ ],
-    "version" : "1.0.0",
+    "version" : "1.0.1",
     "license" : "Artistic-2.0",
      "auth" : "zef:bduggan",
     "authors" : [
