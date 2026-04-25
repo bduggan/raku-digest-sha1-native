@@ -94,7 +94,7 @@ into SHA1_Final with len=8 (the inliner couldn't prove the bulk
 SHA1_Transform loop was unreachable in that call).
 
 Also replaced sprintf with pointer assignment to address an extra NULLs
-being added at the end, fixed bigendian support.
+being added at the end, fixed bigendian support, fixed NULL sha1s.
 */
 
 #include <string.h>
@@ -194,6 +194,12 @@ static void SHA1_Init(SHA1_CTX* context)
 static void SHA1_Update(SHA1_CTX* context, const unsigned char* data, const size_t len)
 {
     size_t i, j;
+
+    /* A zero-length update is a no-op, but the body would still hit
+       memcpy(dst, data, 0) and compute &data[0]. Both are UB per C99
+       when data is NULL, even though most platforms tolerate it.
+       Bail out before touching `data` at all. */
+    if (len == 0) return;
 
     j = (context->count[0] >> 3) & 63;
     if ((context->count[0] += len << 3) < (len << 3)) context->count[1]++;

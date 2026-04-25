@@ -1,0 +1,54 @@
+use Test;
+use NativeCall;
+
+# compute_sha1(NULL, 0, output) used to be undefined behaviour in
+# SHA1_Update: it called memcpy(dst, NULL, 0) and computed &data[0]
+# with data == NULL. Both are technically UB per C99 even though
+# glibc's memcpy short-circuits on len == 0 and most compilers fold
+# the pointer arithmetic to NULL without complaint. UBSan and
+# stricter implementations flag the call.
+#
+# The fix is an early return when len == 0. After it, compute_sha1
+# is well-defined for both a NULL input and a non-NULL but
+# zero-length input, and either yields the SHA1 of the empty string.
+
+constant LIB = $*PROGRAM.parent(2).child(
+    'resources/libraries/' ~ $*VM.platform-library-name('sha1'.IO).Str
+).Str;
+
+# Re-bind compute_sha1 with the data argument typed as Pointer so the
+# test can pass an explicit NULL (and a deliberately-bogus pointer) in
+# without going through Blob marshaling.
+sub compute_sha1_ptr(Pointer, size_t, CArray[uint8])
+    is native(LIB) is symbol('compute_sha1') { * }
+
+my constant EMPTY-SHA1 = 'da39a3ee5e6b4b0d3255bfef95601890afd80709';
+
+sub fresh-out {
+    my CArray[uint8] $o .= new;
+    $o[$_] = 0 for ^80;
+    $o;
+}
+
+sub hex-of(CArray[uint8] $o) {
+    (^40).map({ chr $o[$_] }).join.lc;
+}
+
+# 1. NULL input, zero length.
+my $out1 = fresh-out;
+lives-ok { compute_sha1_ptr(Pointer.new(0), 0, $out1) },
+    'compute_sha1(NULL, 0, output) does not crash';
+is hex-of($out1), EMPTY-SHA1,
+    'compute_sha1(NULL, 0, output) yields SHA1 of empty string';
+
+# 2. Bogus non-NULL pointer with zero length. The data pointer must
+#    never be dereferenced when len == 0, so this should also be
+#    safe -- a strong way to assert "len == 0 means we don't touch
+#    data at all."
+my $out2 = fresh-out;
+lives-ok { compute_sha1_ptr(Pointer.new(0xDEADBEEF), 0, $out2) },
+    'compute_sha1(bogus-ptr, 0, output) does not dereference data';
+is hex-of($out2), EMPTY-SHA1,
+    'compute_sha1(bogus-ptr, 0, output) still yields SHA1 of empty string';
+
+done-testing;
