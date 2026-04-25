@@ -15,3 +15,5 @@
 Makefile
 blib/
 t/data/
+tar
+make
