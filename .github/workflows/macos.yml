@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest' ]
-        raku-version: ['latest', '2025.12']
+        raku-version: ['latest', '2026.07']
     runs-on: ${{ matrix.os }}
 
     steps:

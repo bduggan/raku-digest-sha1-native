@@ -1,0 +1,77 @@
+use Digest::SHA1::Native;
+use Test;
+
+my $want = sha1-hex("The quick brown fox jumps over the lazy dog");
+
+is sha1-hex(supply { emit "The quick brown fox "; emit "jumps over the lazy dog" }),
+   $want, 'Supply of Str chunks matches one-shot digest';
+
+is sha1-hex(supply { emit "The quick brown fox ".encode; emit "jumps over the lazy dog".encode }),
+   $want, 'Supply of Blob chunks matches one-shot digest';
+
+is sha1-hex(supply { }),
+   "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+   'empty Supply is digest of the empty string';
+
+my $big = 'a' x 1_000_000;
+is sha1-hex(supply { emit $big.substr($_, 1000) for 0, 1000 ...^ 1_000_000 }),
+   sha1-hex($big), 'many small chunks across the 64-byte block boundary';
+
+my $tmp = $*TMPDIR.child("sha1-stream-{$*PID}.dat");
+LEAVE .unlink with $tmp;
+$tmp.spurt($big);
+is sha1-hex($tmp), sha1-hex($big), 'IO::Path streams a file from disk';
+is sha1-hex($tmp.open(:r, :bin), chunk-size => 7), sha1-hex($big),
+   'IO::Handle with a tiny chunk-size';
+
+# sha1(Supply) returns the raw digest; sha1-hex is that, hexed.
+{
+  my $bin = sha1 supply { emit "The quick brown fox "; emit "jumps over the lazy dog" }
+  isa-ok $bin, Blob, 'sha1(Supply) returns a Blob';
+  is $bin.elems, 20, '20 raw bytes';
+  is $bin».fmt('%02x').join, $want, 'raw digest hexes to the expected value';
+  is sha1($tmp).elems, 20, 'sha1(IO::Path) returns the raw digest';
+  is-deeply sha1($tmp), sha1($big), 'streamed file digest == one-shot';
+}
+
+# Many streams hashing at once. The barrier holds every thread until all
+# are live, so their updates genuinely interleave; each still gets its own
+# digest and its own thread.
+{
+  my $streams = 12;
+  my $chunks  = 50;
+  my &chunk   = -> $s, $c { "s{$s}-c{$c}-" ~ ('mix' x 29) }
+
+  my @expected = (^$streams).map: -> $s { sha1-hex (^$chunks).map({ chunk($s, $_) }).join }
+
+  my $lock = Lock.new;
+  my %digest;
+  my %thread-id;
+  my atomicint $arrived = 0;
+
+  my @threads = (^$streams).map: -> $s {
+    Thread.start: name => "stream-$s", sub {
+      $arrived⚛++;
+      Nil while ⚛$arrived < $streams;    # wait for every thread to be live
+      my $hex = sha1-hex supply {
+        $lock.protect: { %thread-id{$s} = $*THREAD.id }
+        for ^$chunks -> $c {
+          emit chunk($s, $c);
+          sleep 0.0002 * rand;           # widen the interleaving window
+        }
+      }
+      $lock.protect: { %digest{$s} = $hex }
+    }
+  }
+  .finish for @threads;
+
+  is-deeply
+    (^$streams).map({ %digest{$_} }).List,
+    @expected.List,
+    "$streams streams x $chunks chunks hashed concurrently -- every digest correct";
+
+  is %thread-id.values.unique.elems, $streams,
+    "each stream ran on a distinct \$*THREAD.id ({ %thread-id.values.sort.join(',') })";
+}
+
+done-testing;

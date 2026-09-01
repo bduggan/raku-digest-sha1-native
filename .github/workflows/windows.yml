@@ -10,6 +10,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # git-restore-mtime needs full history to set file mtimes from
+          # commit dates; a shallow clone leaves them all at checkout time,
+          # so make sees the committed DLL as up to date and never rebuilds.
+          fetch-depth: 0
       - uses: chetan/git-restore-mtime-action@v2
       - name: Setup
         run: |
@@ -33,7 +38,7 @@ jobs:
     needs: build-libraries
     strategy:
       matrix:
-        raku-version: ['latest', '2025.12']
+        raku-version: ['latest', '2026.07']
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

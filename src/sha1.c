@@ -278,3 +278,20 @@ void compute_sha1(const unsigned char *str, size_t len, unsigned char *output) {
     SHA1_DigestToHex(digest, output);
 }
 
+/* Streaming API */
+size_t sha1_stream_ctx_size(void) {
+    return sizeof(SHA1_CTX);
+}
+
+void sha1_stream_init(void *ctx) {
+    SHA1_Init((SHA1_CTX *)ctx);
+}
+
+void sha1_stream_update(void *ctx, const unsigned char *data, size_t len) {
+    SHA1_Update((SHA1_CTX *)ctx, data, len);
+}
+
+void sha1_stream_final(void *ctx, unsigned char *output) {
+    SHA1_Final((SHA1_CTX *)ctx, output);
+}
+

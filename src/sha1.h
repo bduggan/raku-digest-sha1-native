@@ -24,6 +24,14 @@ typedef struct {
 
 DLLEXPORT void compute_sha1(const unsigned char *str, size_t len, unsigned char *output);
 
+/* Incremental (streaming) API. Caller owns the context: allocate
+   sha1_stream_ctx_size() bytes, then init / update... / final.
+   final writes the raw SHA1_DIGEST_SIZE byte digest to output. */
+DLLEXPORT size_t sha1_stream_ctx_size(void);
+DLLEXPORT void sha1_stream_init(void *ctx);
+DLLEXPORT void sha1_stream_update(void *ctx, const unsigned char *data, size_t len);
+DLLEXPORT void sha1_stream_final(void *ctx, unsigned char *output);
+
 #ifdef __cplusplus
 }
 #endif
